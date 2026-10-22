@@ -39,9 +39,22 @@ jobs:
             cp icon-192.png android/app/src/main/res/$d/ic_launcher_foreground.png
           done
 
-      - name: Remove splash screen
+      - name: Create splash screen
         run: |
-          sed -i 's/AppTheme.NoActionBarLaunch/AppTheme.NoActionBar/g' android/app/src/main/AndroidManifest.xml
+          pip install pillow
+          python3 - << 'PYEOF'
+          import glob
+          from PIL import Image
+          logo = Image.open("icon-512.png").convert("RGBA")
+          for f in glob.glob("android/app/src/main/res/**/splash.png", recursive=True):
+              w, h = Image.open(f).size
+              bg = Image.new("RGBA", (w, h), "#0d1117")
+              size = int(min(w, h) * 0.3)
+              l = logo.resize((size, size))
+              bg.paste(l, ((w - size) // 2, (h - size) // 2), l)
+              bg.convert("RGB").save(f)
+              print("updated", f)
+          PYEOF
 
       - name: Build debug APK
         working-directory: android
