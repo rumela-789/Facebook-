@@ -37,6 +37,8 @@ jobs:
         env:
           BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          ANDROID_HOME: /home/runner/bw-sdk
+          ANDROID_SDK_ROOT: /home/runner/bw-sdk
         run: |
           bubblewrap update --skipVersionUpgrade --manifest=./twa-manifest.json < /dev/null
           bubblewrap build --skipPwaValidation < /dev/null
