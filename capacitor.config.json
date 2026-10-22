@@ -1,0 +1,9 @@
+{
+  "appId": "com.rumela.vimline",
+  "appName": "Vimline",
+  "webDir": "www",
+  "server": {
+    "url": "https://rumela-789.github.io",
+    "cleartext": false
+  }
+}
