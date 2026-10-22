@@ -39,6 +39,14 @@ jobs:
             cp icon-192.png android/app/src/main/res/$d/ic_launcher_foreground.png
           done
 
+      - name: Create splash screen
+        run: |
+          convert -size 2732x2732 xc:'#0d1117' \
+            \( icon-512.png -resize 700x700 \) \
+            -gravity center -composite splash.png
+          find android/app/src/main/res -name 'splash.png' \
+            -exec cp splash.png {} \;
+
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug
