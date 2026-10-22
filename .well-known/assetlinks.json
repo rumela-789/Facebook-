@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.vimline.app",
+    "sha256_cert_fingerprints": [
+      "69:9F:58:CA:F3:11:E8:37:47:69:1C:53:07:6F:D8:A3:7C:89:7A:F6:E8:C6:98:E9:D7:2A:ED:78:D0:8C:50:9E"
+    ]
+  }
+}]
