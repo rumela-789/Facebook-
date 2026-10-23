@@ -38,6 +38,11 @@ jobs:
         run: |
           if [ ! -d android ]; then npx cap add android; fi
 
+      - name: Use fixed debug keystore
+        run: |
+          mkdir -p ~/.android
+          cp debug.keystore ~/.android/debug.keystore
+
       - name: Set app icon
         run: |
           RES=android/app/src/main/res
