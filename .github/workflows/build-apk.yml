@@ -2,7 +2,7 @@ name: Build APK
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -20,47 +20,54 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Install tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick
+
       - name: Install dependencies
         run: npm install
 
-      - name: Create placeholder web folder
+      - name: Prepare web files
         run: |
-          mkdir -p www
-          echo '<!doctype html><html><body></body></html>' > www/index.html
+          rm -rf www && mkdir www
+          cp index.html manifest.json sw.js privacy.html www/ 2>/dev/null || true
+          cp icon-512.png www/
 
       - name: Add Android platform
-        run: npx cap add android
-
-      - name: Copy icon
         run: |
-          for d in mipmap-mdpi mipmap-hdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
-            cp icon-192.png android/app/src/main/res/$d/ic_launcher.png
-            cp icon-192.png android/app/src/main/res/$d/ic_launcher_round.png
-            cp icon-192.png android/app/src/main/res/$d/ic_launcher_foreground.png
+          if [ ! -d android ]; then npx cap add android; fi
+
+      - name: Set app icon from icon-512.png
+        run: |
+          RES=android/app/src/main/res
+          rm -rf $RES/mipmap-anydpi-v26
+          for pair in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
+            d=${pair%%:*}; s=${pair##*:}
+            mkdir -p $RES/mipmap-$d
+            convert icon-512.png -resize ${s}x${s} $RES/mipmap-$d/ic_launcher.png
+            convert icon-512.png -resize ${s}x${s} $RES/mipmap-$d/ic_launcher_round.png
+            convert icon-512.png -resize ${s}x${s} $RES/mipmap-$d/ic_launcher_foreground.png
           done
 
-      - name: Create splash screen
+      - name: Set splash screen from splash.png
         run: |
-          pip install pillow
-          python3 - << 'PYEOF'
-          import glob
-          from PIL import Image
-          logo = Image.open("icon-512.png").convert("RGBA")
-          for f in glob.glob("android/app/src/main/res/**/splash.png", recursive=True):
-              w, h = Image.open(f).size
-              bg = Image.new("RGBA", (w, h), "#0d1117")
-              size = int(min(w, h) * 0.3)
-              l = logo.resize((size, size))
-              bg.paste(l, ((w - size) // 2, (h - size) // 2), l)
-              bg.convert("RGB").save(f)
-              print("updated", f)
-          PYEOF
+          RES=android/app/src/main/res
+          convert splash.png -resize 1600x1600 /tmp/splash.png
+          find $RES -name "splash.png" -exec cp /tmp/splash.png {} \;
+          mkdir -p $RES/drawable
+          cp /tmp/splash.png $RES/drawable/splash.png
+
+      - name: Sync Capacitor
+        run: npx cap sync android
 
       - name: Build debug APK
         working-directory: android
-        run: ./gradlew assembleDebug
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
       - uses: actions/upload-artifact@v4
         with:
-          name: vimline-apk
+          name: app-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
