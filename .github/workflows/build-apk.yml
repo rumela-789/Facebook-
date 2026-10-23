@@ -38,7 +38,7 @@ jobs:
         run: |
           if [ ! -d android ]; then npx cap add android; fi
 
-      - name: Set app icon from icon-512.png
+      - name: Set app icon
         run: |
           RES=android/app/src/main/res
           rm -rf $RES/mipmap-anydpi-v26
@@ -50,10 +50,10 @@ jobs:
             convert icon-512.png -resize ${s}x${s} $RES/mipmap-$d/ic_launcher_foreground.png
           done
 
-      - name: Set splash screen from splash.png
+      - name: Set splash screen (no stretch)
         run: |
           RES=android/app/src/main/res
-          convert splash.png -resize 1600x1600 /tmp/splash.png
+          convert splash.png -resize 800x800 -background "#000000" -gravity center -extent 1080x2400 /tmp/splash.png
           find $RES -name "splash.png" -exec cp /tmp/splash.png {} \;
           mkdir -p $RES/drawable
           cp /tmp/splash.png $RES/drawable/splash.png
