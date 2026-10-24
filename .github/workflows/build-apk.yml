@@ -38,6 +38,26 @@ jobs:
         run: |
           if [ ! -d android ]; then npx cap add android; fi
 
+      - name: Lock text size (ignore system font scale)
+        run: |
+          F=$(find android/app/src/main/java -name MainActivity.java | head -1)
+          PKG=$(grep -m1 '^package ' $F)
+          cat > $F <<EOF
+          $PKG
+
+          import com.getcapacitor.BridgeActivity;
+
+          public class MainActivity extends BridgeActivity {
+              @Override
+              public void onStart() {
+                  super.onStart();
+                  try {
+                      getBridge().getWebView().getSettings().setTextZoom(100);
+                  } catch (Exception e) {}
+              }
+          }
+          EOF
+
       - name: Add Android permissions
         run: |
           M=android/app/src/main/AndroidManifest.xml
