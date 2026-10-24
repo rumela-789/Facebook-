@@ -38,6 +38,16 @@ jobs:
         run: |
           if [ ! -d android ]; then npx cap add android; fi
 
+      - name: Add Android permissions
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          for p in CAMERA RECORD_AUDIO MODIFY_AUDIO_SETTINGS ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION POST_NOTIFICATIONS; do
+            grep -q "android.permission.$p" $M || sed -i "s|<application|<uses-permission android:name=\"android.permission.$p\" />\n    <application|" $M
+          done
+          grep -q "android.hardware.camera" $M || sed -i "s|<application|<uses-feature android:name=\"android.hardware.camera\" android:required=\"false\" />\n    <application|" $M
+          grep -q "android.hardware.microphone" $M || sed -i "s|<application|<uses-feature android:name=\"android.hardware.microphone\" android:required=\"false\" />\n    <application|" $M
+          grep -E "permission|uses-feature" $M
+
       - name: Use fixed debug keystore
         run: |
           mkdir -p ~/.android
